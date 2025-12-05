@@ -78,11 +78,12 @@ document.cookie.includes('refreshToken') // Should be false
 
 ```javascript
 // Check refresh token
-document.cookie.includes('refreshToken')
+document.cookie.includes("refreshToken");
 
 // Clear all cookies
-document.cookie.split(';').forEach(c => {
-  document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+document.cookie.split(";").forEach((c) => {
+  document.cookie =
+    c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
 });
 
 // Check if authenticated (React DevTools)
@@ -130,8 +131,9 @@ code src/pages/Dashboard.jsx
 
 ```javascript
 // In browser console
-document.cookie.split(';').forEach(c => {
-  document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+document.cookie.split(";").forEach((c) => {
+  document.cookie =
+    c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
 });
 location.reload();
 ```

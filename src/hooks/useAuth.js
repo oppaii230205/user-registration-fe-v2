@@ -12,8 +12,9 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: authAPI.login,
     onSuccess: (data) => {
-      const { accessToken, refreshToken } = data;
-      login(accessToken, refreshToken);
+      const { accessToken } = data;
+      // Refresh token is set as HttpOnly cookie by backend
+      login(accessToken);
       queryClient.invalidateQueries({ queryKey: ["user"] });
       navigate("/dashboard");
     },
@@ -40,11 +41,10 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      // Just clear local state, no API call needed
-      return Promise.resolve();
+      // Call backend to clear HttpOnly cookie
+      await logout();
     },
     onSuccess: () => {
-      logout();
       queryClient.clear(); // Clear all queries from cache
       navigate("/login");
     },
@@ -53,13 +53,20 @@ export const useLogout = () => {
 
 // Hook for fetching user profile
 export const useUser = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, login } = useAuth();
 
   return useQuery({
     queryKey: ["user"],
     queryFn: authAPI.getProfile,
-    enabled: isAuthenticated, // Only fetch when authenticated
+    enabled: true, // Always try to fetch - will trigger refresh if HttpOnly cookie exists
     retry: false,
-    staleTime: 1000 * 60 * 1, // 1 minutes
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    onSuccess: (data) => {
+      // If we successfully got user data and weren't authenticated, update auth state
+      if (!isAuthenticated && data) {
+        // User is authenticated via HttpOnly cookie
+        login(null); // Access token will be set by interceptor during refresh
+      }
+    },
   });
 };

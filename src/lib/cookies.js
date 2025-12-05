@@ -20,7 +20,7 @@ export const setCookie = (name, value, days = 7) => {
 export const getCookie = (name) => {
   const nameEQ = name + "=";
   const cookies = document.cookie.split(";");
-  
+
   for (let i = 0; i < cookies.length; i++) {
     let cookie = cookies[i];
     while (cookie.charAt(0) === " ") {

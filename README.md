@@ -280,7 +280,9 @@ VITE_API_BASE_URL=https://user-registration-be-qcv3.onrender.com
 The API base URL is automatically loaded from the environment variable in `src/lib/api.js`:
 
 ```javascript
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://user-registration-be-qcv3.onrender.com";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://user-registration-be-qcv3.onrender.com";
 ```
 
 > **Note:** The `.env` file is gitignored to prevent committing sensitive data. Use `.env.example` as a template for new setups.

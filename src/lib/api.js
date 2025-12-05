@@ -1,8 +1,9 @@
 import axios from "axios";
-import { getCookie, setCookie, deleteCookie } from "./cookies";
 
 // Get base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://user-registration-be-qcv3.onrender.com";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://user-registration-be-qcv3.onrender.com";
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -10,29 +11,33 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // Enable sending cookies with requests
 });
 
-// Token management - Access token stored in memory, refresh token in cookies
+// Token management - Access token stored in memory, refresh token in HttpOnly cookie (managed by backend)
 let accessToken = null;
+let isAuthenticated = false;
 
 export const tokenManager = {
   getAccessToken: () => accessToken,
   setAccessToken: (token) => {
     accessToken = token;
+    isAuthenticated = true;
   },
   clearAccessToken: () => {
     accessToken = null;
+    isAuthenticated = false;
   },
-  getRefreshToken: () => getCookie("refreshToken"),
-  setRefreshToken: (token) => {
-    setCookie("refreshToken", token, 7); // 7 days expiry
+  isAuthenticated: () => isAuthenticated,
+  setAuthenticated: (value) => {
+    isAuthenticated = value;
   },
-  clearRefreshToken: () => {
-    deleteCookie("refreshToken");
-  },
+  // Refresh token is HttpOnly cookie - cannot be accessed by JavaScript
+  // Backend automatically reads it from cookie header
   clearAll: () => {
     accessToken = null;
-    deleteCookie("refreshToken");
+    isAuthenticated = false;
+    // Call logout endpoint to clear HttpOnly cookie on backend
   },
 };
 
@@ -71,6 +76,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Prevent infinite loop - don't retry refresh endpoint itself
+    if (originalRequest.url?.includes("/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
@@ -90,20 +100,12 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = tokenManager.getRefreshToken();
-
-      if (!refreshToken) {
-        // No refresh token available, logout user
-        tokenManager.clearAll();
-        window.location.href = "/login";
-        return Promise.reject(error);
-      }
-
       try {
-        // Call refresh token endpoint
+        // Call refresh token endpoint - HttpOnly cookie sent automatically
         const response = await axios.post(
-          `${API_BASE_URL}/auth/request`,
-          { refreshToken }
+          `${API_BASE_URL}/auth/refresh`,
+          {}, // Empty body - refresh token in HttpOnly cookie
+          { withCredentials: true } // Send cookies with request
         );
 
         const { accessToken: newAccessToken } = response.data;
@@ -144,8 +146,15 @@ export const authAPI = {
     return response.data;
   },
 
-  refreshToken: async (refreshToken) => {
-    const response = await api.post("/auth/request", { refreshToken });
+  refreshToken: async () => {
+    // Refresh token is in HttpOnly cookie, sent automatically
+    const response = await api.post("/auth/refresh");
+    return response.data;
+  },
+
+  logout: async () => {
+    // Call logout endpoint to clear HttpOnly cookie
+    const response = await api.post("/auth/logout");
     return response.data;
   },
 

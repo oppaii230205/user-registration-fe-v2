@@ -4,9 +4,9 @@
 
 ### Token Storage Strategy
 
-| Token Type        | Storage Location        | Reason                                                                                | Security Level    |
-|-------------------|-------------------------|--------------------------------------------------------------------------------------|-------------------|
-| **Access Token**  | In-memory (JS variable) | Prevents XSS attacks - cannot be accessed via document.cookie or localStorage        | ⭐⭐⭐⭐⭐ Highest |
+| Token Type        | Storage Location        | Reason                                                                              | Security Level     |
+| ----------------- | ----------------------- | ----------------------------------------------------------------------------------- | ------------------ |
+| **Access Token**  | In-memory (JS variable) | Prevents XSS attacks - cannot be accessed via document.cookie or localStorage       | ⭐⭐⭐⭐⭐ Highest |
 | **Refresh Token** | HTTP Cookies (Secure)   | Persistence across page refreshes with Secure, SameSite=Strict flags for protection | ⭐⭐⭐⭐ High      |
 
 ### Token Flow Diagram
@@ -313,7 +313,7 @@ return <ProtectedComponent />;
 
 ```javascript
 // In browser console on /dashboard
-document.cookie // Should contain refreshToken
+document.cookie; // Should contain refreshToken
 window.tokenManager.getAccessToken(); // Will be null initially
 
 // Make an API call, watch Network tab
@@ -324,7 +324,7 @@ window.tokenManager.getAccessToken(); // Will be null initially
 
 ```javascript
 // In browser console
-document.cookie = "refreshToken=invalid-token; path=/"
+document.cookie = "refreshToken=invalid-token; path=/";
 // Try to access /dashboard
 // Should redirect to /login
 ```

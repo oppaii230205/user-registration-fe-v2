@@ -89,7 +89,7 @@ Open browser console and run:
 
 ```javascript
 // Check if refresh token exists
-document.cookie.includes('refreshToken')
+document.cookie.includes("refreshToken");
 
 // Check auth state (React DevTools needed)
 // Install React DevTools extension
@@ -159,8 +159,9 @@ console.log("Refresh Token in cookies:", document.cookie);
 
 ```javascript
 // In browser console
-document.cookie.split(';').forEach(c => {
-  document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+document.cookie.split(";").forEach((c) => {
+  document.cookie =
+    c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
 });
 // Then refresh the page
 ```

@@ -8,23 +8,31 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user has a refresh token on mount
-    const refreshToken = tokenManager.getRefreshToken();
-    if (refreshToken) {
-      setIsAuthenticated(true);
-    }
+    // Since refresh token is HttpOnly, we can't check it directly
+    // We'll set loading to false and let the user trigger auth if needed
+    // The refresh will happen automatically on first API call if valid cookie exists
     setIsLoading(false);
   }, []);
 
-  const login = (accessToken, refreshToken) => {
-    tokenManager.setAccessToken(accessToken);
-    tokenManager.setRefreshToken(refreshToken);
+  const login = (accessToken) => {
+    // Refresh token is set as HttpOnly cookie by backend
+    if (accessToken) {
+      tokenManager.setAccessToken(accessToken);
+    }
     setIsAuthenticated(true);
   };
 
-  const logout = () => {
-    tokenManager.clearAll();
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      // Call backend to clear HttpOnly cookie
+      const { authAPI } = await import("../lib/api");
+      await authAPI.logout();
+    } catch {
+      // Ignore errors during logout
+    } finally {
+      tokenManager.clearAll();
+      setIsAuthenticated(false);
+    }
   };
 
   const value = {

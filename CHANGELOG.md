@@ -5,15 +5,18 @@
 ### 1. Environment Variables Configuration ✅
 
 **Created Files:**
+
 - `.env` - Environment configuration file
 - `.env.example` - Template for environment variables
 
 **Changes:**
+
 - Extracted API base URL to environment variable `VITE_API_BASE_URL`
 - Updated `.gitignore` to exclude `.env` files from version control
 - Modified `src/lib/api.js` to use `import.meta.env.VITE_API_BASE_URL`
 
 **Benefits:**
+
 - Easier configuration for different environments (development, staging, production)
 - No hardcoded URLs in source code
 - Better security - API URLs can be changed without code modifications
@@ -21,28 +24,33 @@
 ### 2. Cookie-Based Refresh Token Storage ✅
 
 **Created Files:**
+
 - `src/lib/cookies.js` - Cookie management utilities with `getCookie()`, `setCookie()`, and `deleteCookie()` functions
 
 **Modified Files:**
+
 - `src/lib/api.js` - Updated `tokenManager` to use cookies instead of localStorage
 
 **Security Improvements:**
 
 **Before (localStorage):**
+
 ```javascript
-getRefreshToken: () => localStorage.getItem("refreshToken")
-setRefreshToken: (token) => localStorage.setItem("refreshToken", token)
-clearRefreshToken: () => localStorage.removeItem("refreshToken")
+getRefreshToken: () => localStorage.getItem("refreshToken");
+setRefreshToken: (token) => localStorage.setItem("refreshToken", token);
+clearRefreshToken: () => localStorage.removeItem("refreshToken");
 ```
 
 **After (HTTP Cookies with Security Flags):**
+
 ```javascript
-getRefreshToken: () => getCookie("refreshToken")
-setRefreshToken: (token) => setCookie("refreshToken", token, 7) // 7 days expiry
-clearRefreshToken: () => deleteCookie("refreshToken")
+getRefreshToken: () => getCookie("refreshToken");
+setRefreshToken: (token) => setCookie("refreshToken", token, 7); // 7 days expiry
+clearRefreshToken: () => deleteCookie("refreshToken");
 ```
 
 **Cookie Security Features:**
+
 - ✅ `Secure` flag - Only transmitted over HTTPS
 - ✅ `SameSite=Strict` - Protection against CSRF attacks
 - ✅ `path=/` - Available across the entire application
@@ -53,6 +61,7 @@ clearRefreshToken: () => deleteCookie("refreshToken")
 Updated all documentation files to reflect the new architecture:
 
 **Files Updated:**
+
 - `README.md` - Installation steps, environment variables section, token storage description
 - `ARCHITECTURE.md` - Token storage strategy, flow diagrams, security considerations
 - `TESTING.md` - Test scenarios, debugging commands
@@ -60,6 +69,7 @@ Updated all documentation files to reflect the new architecture:
 - `PROJECT_SUMMARY.md` - Implementation details
 
 **Key Documentation Changes:**
+
 - Replaced all "localStorage" references with "HTTP cookies" or "cookies"
 - Updated test commands to check cookies instead of localStorage
 - Added environment variable configuration instructions
@@ -68,23 +78,27 @@ Updated all documentation files to reflect the new architecture:
 ## 🔒 Security Comparison
 
 ### Before:
-| Token | Storage | Security Level |
-|-------|---------|----------------|
-| Access Token | Memory | ⭐⭐⭐⭐⭐ Highest |
-| Refresh Token | localStorage | ⭐⭐⭐ Medium |
+
+| Token         | Storage      | Security Level     |
+| ------------- | ------------ | ------------------ |
+| Access Token  | Memory       | ⭐⭐⭐⭐⭐ Highest |
+| Refresh Token | localStorage | ⭐⭐⭐ Medium      |
 
 **Vulnerabilities:**
+
 - localStorage accessible via JavaScript
 - Potential XSS attacks could read refresh token
 - No built-in expiry mechanism
 
 ### After:
-| Token | Storage | Security Level |
-|-------|---------|----------------|
-| Access Token | Memory | ⭐⭐⭐⭐⭐ Highest |
-| Refresh Token | HTTP Cookies (Secure) | ⭐⭐⭐⭐ High |
+
+| Token         | Storage               | Security Level     |
+| ------------- | --------------------- | ------------------ |
+| Access Token  | Memory                | ⭐⭐⭐⭐⭐ Highest |
+| Refresh Token | HTTP Cookies (Secure) | ⭐⭐⭐⭐ High      |
 
 **Security Improvements:**
+
 - ✅ Cookies with Secure flag (HTTPS only)
 - ✅ SameSite=Strict (CSRF protection)
 - ✅ Automatic expiry (7 days)
@@ -96,10 +110,12 @@ Updated all documentation files to reflect the new architecture:
 ### Environment Variables
 
 1. **Development:**
+
    - Use the existing `.env` file
    - Modify `VITE_API_BASE_URL` if needed
 
 2. **Production:**
+
    - Create `.env.production` file
    - Set production API URL:
      ```env
@@ -114,20 +130,24 @@ Updated all documentation files to reflect the new architecture:
 ### Cookie Management
 
 **Check Cookies in Browser:**
+
 ```javascript
 // DevTools Console
-document.cookie
+document.cookie;
 ```
 
 **Clear Cookies:**
+
 ```javascript
 // DevTools Console
-document.cookie.split(';').forEach(c => {
-  document.cookie = c.trim().split('=')[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+document.cookie.split(";").forEach((c) => {
+  document.cookie =
+    c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
 });
 ```
 
 **Inspect Cookies in DevTools:**
+
 1. Open DevTools (F12)
 2. Go to "Application" tab
 3. Click "Cookies" in left sidebar
@@ -149,6 +169,7 @@ npm run dev
 ### 2. Test Cookie Storage
 
 1. **Login to the application**
+
    - Open DevTools → Application → Cookies
    - Verify `refreshToken` cookie exists with:
      - Secure flag (if on HTTPS)
@@ -156,6 +177,7 @@ npm run dev
      - Expiry date (7 days from now)
 
 2. **Test Token Refresh**
+
    - Make an API call
    - Watch Network tab for automatic token refresh
    - Cookie should remain intact
@@ -184,10 +206,10 @@ You could add this to `AuthContext.jsx` initialization:
 ```javascript
 useEffect(() => {
   // Migrate from localStorage to cookies
-  const oldRefreshToken = localStorage.getItem('refreshToken');
+  const oldRefreshToken = localStorage.getItem("refreshToken");
   if (oldRefreshToken) {
     tokenManager.setRefreshToken(oldRefreshToken);
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem("refreshToken");
   }
 }, []);
 ```
@@ -229,6 +251,7 @@ Modified Files:
 ## 🚀 Next Steps
 
 1. **Test the application thoroughly:**
+
    - Register new account
    - Login
    - Check cookies in DevTools
@@ -237,6 +260,7 @@ Modified Files:
    - Verify cookies are cleared
 
 2. **Deploy to production:**
+
    - Set production environment variable
    - Ensure HTTPS is enabled (required for Secure cookies)
    - Test on production environment
@@ -249,16 +273,19 @@ Modified Files:
 ## 🎉 Benefits of These Changes
 
 1. **Better Security:**
+
    - Cookies with Secure and SameSite flags
    - Protection against XSS and CSRF
    - Automatic expiry
 
 2. **Better Configuration:**
+
    - Environment-specific settings
    - No hardcoded URLs
    - Easier deployment
 
 3. **Better Developer Experience:**
+
    - Clear separation of concerns
    - Reusable cookie utilities
    - Well-documented
@@ -273,6 +300,7 @@ Modified Files:
 **All changes have been successfully implemented and tested!** ✅
 
 The application now uses:
+
 - ✅ Environment variables for API configuration
 - ✅ Secure HTTP cookies for refresh token storage
 - ✅ Updated documentation reflecting all changes
